@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BabyVerse V3 - AI Animation Generator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      text-align: center;
+      font-size: 2.5em;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 1.1em;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      color: #333;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 1.05em;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 1em;
+      font-family: inherit;
+      transition: border-color 0.3s;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+    }
+
+    button {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.05em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-plan {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-plan:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
+    }
+
+    .btn-generate {
+      background: #764ba2;
+      color: white;
+    }
+
+    .btn-generate:hover {
+      background: #63388d;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(118, 75, 162, 0.2);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .output {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .output.show {
+      display: block;
+    }
+
+    .output h3 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 1.2em;
+    }
+
+    .shot {
+      background: white;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+
+    .shot-title {
+      font-weight: 600;
+      color: #667eea;
+      margin-bottom: 5px;
+    }
+
+    .shot-duration {
+      color: #999;
+      font-size: 0.9em;
+      margin-bottom: 8px;
+    }
+
+    .shot-prompt {
+      color: #555;
+      font-size: 0.95em;
+      line-height: 1.5;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      color: #667eea;
+      margin-top: 20px;
+    }
+
+    .loading.show {
+      display: block;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .error {
+      background: #fee;
+      color: #c33;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 15px;
+      display: none;
+    }
+
+    .error.show {
+      display: block;
+    }
+
+    .character-preview {
+      background: #f0f4ff;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border-left: 4px solid #667eea;
+    }
+
+    .character-preview h4 {
+      color: #667eea;
+      margin-bottom: 8px;
+    }
+
+    .character-preview p {
+      color: #666;
+      font-size: 0.95em;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎬 BabyVerse V3</h1>
+    <p class="subtitle">AI-Powered Educational Animation Generator</p>
+
+    <div class="character-preview">
+      <h4>Featured Character: Baby Pam</h4>
+      <p>Age 2-4 • Soft curly dark hair with pink ties • Big expressive brown eyes • Pink overalls</p>
+    </div>
+
+    <form id="form">
+      <div class="form-group">
+        <label for="idea">Learning Idea</label>
+        <textarea
+          id="idea"
+          placeholder="e.g., 'Learning to share toys with friends'"
+          required
+        ></textarea>
+      </div>
+
+      <div class="button-group">
+        <button type="button" class="btn-plan" onclick="planVideo()">📋 Plan</button>
+        <button type="button" class="btn-generate" onclick="generateVideo()">🎥 Generate</button>
+      </div>
+    </form>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Processing your request...</p>
+    </div>
+
+    <div id="error" class="error"></div>
+
+    <div id="output" class="output">
+      <h3>Video Plan</h3>
+      <div id="shots"></div>
+      <p id="duration" style="color: #666; margin-top: 15px; font-weight: 500;"></p>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:3000/api";
+
+    async function planVideo() {
+      const idea = document.getElementById("idea").value.trim();
+      if (!idea) {
+        showError("Please enter a learning idea.");
+        return;
+      }
+
+      showLoading(true);
+      try {
+        const res = await fetch(`${API_BASE}/plan`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idea })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        displayShots(data.shots, data.totalDuration);
+        showError("");
+      } catch (e) {
+        showError(e.message);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function generateVideo() {
+      const idea = document.getElementById("idea").value.trim();
+      if (!idea) {
+        showError("Please enter a learning idea.");
+        return;
+      }
+
+      showLoading(true);
+      try {
+        const res = await fetch(`${API_BASE}/generate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idea })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        alert(`✅ Video generation started!\nTask ID: ${data.taskId}`);
+        showError("");
+      } catch (e) {
+        showError(e.message);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function displayShots(shots, totalDuration) {
+      const shotsDiv = document.getElementById("shots");
+      shotsDiv.innerHTML = shots
+        .map(
+          (shot) => `
+        <div class="shot">
+          <div class="shot-title">📹 ${shot.title}</div>
+          <div class="shot-duration">⏱️ ${shot.duration}s</div>
+          <div class="shot-prompt">${shot.prompt}</div>
+        </div>
+      `
+        )
+        .join("");
+
+      document.getElementById("duration").textContent = `Total Duration: ${totalDuration}s`;
+      document.getElementById("output").classList.add("show");
+    }
+
+    function showError(msg) {
+      const errorDiv = document.getElementById("error");
+      if (msg) {
+        errorDiv.textContent = msg;
+        errorDiv.classList.add("show");
+      } else {
+        errorDiv.classList.remove("show");
+      }
+    }
+
+    function showLoading(show) {
+      document.getElementById("loading").classList.toggle("show", show);
+    }
+  </script>
+</body>
+</html>
